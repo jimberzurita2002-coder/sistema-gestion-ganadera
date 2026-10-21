@@ -32,7 +32,120 @@
   $$(".nav-item").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));$$("[data-open]").forEach(b=>b.addEventListener("click",()=>{const v=b.dataset.open;switchView(v);if(v==="animals")openDialog("animalDialog");else if(v==="health")openDialog("healthDialog");else if(v==="reproduction")openDialog("reproDialog");else if(v==="weights")openDialog("weightDialog")}));
   $("#menuBtn").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));$("#addAnimalBtn").addEventListener("click",()=>{editingAnimalId=null;$("#animalForm").reset();openDialog("animalDialog")});$("#addHealthBtn").addEventListener("click",()=>openDialog("healthDialog"));$("#addReproBtn").addEventListener("click",()=>openDialog("reproDialog"));$("#addWeightBtn").addEventListener("click",()=>openDialog("weightDialog"));$("#addPaddockBtn").addEventListener("click",()=>{$("#paddockName").focus()});$("#animalSearch").addEventListener("input",renderAnimals);$("#animalFilter").addEventListener("change",renderAnimals);$("#exportBtn").addEventListener("click",exportData);$("#exportBtn2").addEventListener("click",exportData);
   $$("[data-close]").forEach(b=>b.addEventListener("click",()=>closeDialog(b.dataset.close)));$$("dialog").forEach(d=>d.addEventListener("click",e=>{if(e.target===d)d.close()}));
-  $("#animalForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.currentTarget);const a=Object.fromEntries(f.entries());a.id=a.id.trim();if(!a.id){toast("El arete o ID es obligatorio.");return}const duplicate=data.animals.some(x=>x.id.toLowerCase()===a.id.toLowerCase()&&x.id!==editingAnimalId);if(duplicate){toast("Ya existe un animal con ese arete/ID.");return}a.weight=a.weight?Number(a.weight):"";a.createdAt=editingAnimalId?(data.animals.find(x=>x.id===editingAnimalId)?.createdAt||todayISO()):todayISO();if(editingAnimalId){const i=data.animals.findIndex(x=>x.id===editingAnimalId);const oldId=editingAnimalId;data.animals[i]=a;if(oldId!==a.id){["health","reproduction","weights"].forEach(k=>data[k].forEach(x=>{if(x.animalId===oldId)x.animalId=a.id}))}toast("Bovino actualizado correctamente.")}else{data.animals.push(a);toast("Bovino registrado correctamente.")}persist();closeDialog("animalDialog");editingAnimalId=null;renderAll()});
+  
+$("#animalForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const f = new FormData(e.currentTarget);
+  const a = Object.fromEntries(f.entries());
+  a.id = String(a.id || "").trim();
+
+  if (!a.id) {
+    toast("El arete o ID es obligatorio.");
+    return;
+  }
+
+  const duplicate = data.animals.some(
+    x => String(x.id).toLowerCase() === a.id.toLowerCase()
+      && String(x.id) !== String(editingAnimalId)
+  );
+
+  if (duplicate) {
+    toast("Ya existe un animal con ese arete/ID.");
+    return;
+  }
+
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
+
+  const user = sessionData?.session?.user;
+
+  if (sessionError || !user) {
+    toast("Sesión no activa. Vuelve a iniciar sesión.");
+    return;
+  }
+
+  const record = {
+    animal_code: a.id,
+    name: a.name || null,
+    breed: a.breed || null,
+    sex: a.sex || null,
+    birth_date: a.birth || null,
+    category: a.category || null,
+    notes: a.notes || null,
+    user_id: user.id
+  };
+
+  try {
+    let result;
+
+    if (editingAnimalId !== null) {
+      result = await supabaseClient
+        .from("animals")
+        .update(record)
+        .eq("animal_code", String(editingAnimalId))
+        .eq("user_id", user.id)
+        .select();
+
+      if (!result.error && (!result.data || result.data.length === 0)) {
+        throw new Error("No se encontró el bovino para actualizar. Revisa los permisos RLS.");
+      }
+    } else {
+      result = await supabaseClient
+        .from("animals")
+        .insert(record)
+        .select();
+
+      if (!result.error && (!result.data || result.data.length === 0)) {
+        throw new Error("Supabase no confirmó el registro.");
+      }
+    }
+
+    if (result.error) throw result.error;
+
+    a.weight = a.weight ? Number(a.weight) : "";
+    a.createdAt = editingAnimalId !== null
+      ? (data.animals.find(x => String(x.id) === String(editingAnimalId))?.createdAt || todayISO())
+      : todayISO();
+
+    if (editingAnimalId !== null) {
+      const index = data.animals.findIndex(
+        x => String(x.id) === String(editingAnimalId)
+      );
+
+      const oldId = String(editingAnimalId);
+
+      if (index !== -1) {
+        data.animals[index] = a;
+      } else {
+        data.animals.push(a);
+      }
+
+      if (oldId !== a.id) {
+        ["health", "reproduction", "weights"].forEach(k => {
+          data[k].forEach(x => {
+            if (String(x.animalId) === oldId) x.animalId = a.id;
+          });
+        });
+      }
+
+      toast("Bovino actualizado en Supabase.");
+    } else {
+      data.animals.push(a);
+      toast("Bovino guardado en Supabase.");
+    }
+
+    persist();
+    closeDialog("animalDialog");
+    editingAnimalId = null;
+    renderAll();
+
+  } catch (error) {
+    console.error("Error guardando bovino:", error);
+    toast("Error al guardar: " + (error.message || "Revisa Supabase y los permisos RLS."));
+  }
+});
+
   $("#animalsTable").addEventListener("click",e=>{const edit=e.target.closest("[data-edit-animal]");const del=e.target.closest("[data-delete-animal]");if(edit){editingAnimalId=edit.dataset.editAnimal;const a=data.animals.find(x=>x.id===editingAnimalId);if(!a)return;const form=$("#animalForm");Object.entries(a).forEach(([k,v])=>{if(form.elements[k])form.elements[k].value=v??""});openDialog("animalDialog")}
 if(del){
   const id=del.dataset.deleteAnimal;
