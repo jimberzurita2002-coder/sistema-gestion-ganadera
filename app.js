@@ -30,7 +30,22 @@
   $("#menuBtn").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));$("#addAnimalBtn").addEventListener("click",()=>{editingAnimalId=null;$("#animalForm").reset();openDialog("animalDialog")});$("#addHealthBtn").addEventListener("click",()=>openDialog("healthDialog"));$("#addReproBtn").addEventListener("click",()=>openDialog("reproDialog"));$("#addWeightBtn").addEventListener("click",()=>openDialog("weightDialog"));$("#addPaddockBtn").addEventListener("click",()=>{$("#paddockName").focus()});$("#animalSearch").addEventListener("input",renderAnimals);$("#animalFilter").addEventListener("change",renderAnimals);$("#exportBtn").addEventListener("click",exportData);$("#exportBtn2").addEventListener("click",exportData);
   $$("[data-close]").forEach(b=>b.addEventListener("click",()=>closeDialog(b.dataset.close)));$$("dialog").forEach(d=>d.addEventListener("click",e=>{if(e.target===d)d.close()}));
   $("#animalForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.currentTarget);const a=Object.fromEntries(f.entries());a.id=a.id.trim();if(!a.id){toast("El arete o ID es obligatorio.");return}const duplicate=data.animals.some(x=>x.id.toLowerCase()===a.id.toLowerCase()&&x.id!==editingAnimalId);if(duplicate){toast("Ya existe un animal con ese arete/ID.");return}a.weight=a.weight?Number(a.weight):"";a.createdAt=editingAnimalId?(data.animals.find(x=>x.id===editingAnimalId)?.createdAt||todayISO()):todayISO();if(editingAnimalId){const i=data.animals.findIndex(x=>x.id===editingAnimalId);const oldId=editingAnimalId;data.animals[i]=a;if(oldId!==a.id){["health","reproduction","weights"].forEach(k=>data[k].forEach(x=>{if(x.animalId===oldId)x.animalId=a.id}))}toast("Bovino actualizado correctamente.")}else{data.animals.push(a);toast("Bovino registrado correctamente.")}persist();closeDialog("animalDialog");editingAnimalId=null;renderAll()});
-  $("#animalsTable").addEventListener("click",e=>{const edit=e.target.closest("[data-edit-animal]");const del=e.target.closest("[data-delete-animal]");if(edit){editingAnimalId=edit.dataset.editAnimal;const a=data.animals.find(x=>x.id===editingAnimalId);if(!a)return;const form=$("#animalForm");Object.entries(a).forEach(([k,v])=>{if(form.elements[k])form.elements[k].value=v??""});openDialog("animalDialog")}if(del){const id=del.dataset.deleteAnimal;if(confirm(`¿Eliminar el bovino ${id}? Los eventos anteriores se conservarán con su ID.`)){data.animals=data.animals.filter(a=>a.id!==id);persist();renderAll();toast("Bovino eliminado.")}}});
+  $("#animalsTable").addEventListener("click",e=>{const edit=e.target.closest("[data-edit-animal]");const del=e.target.closest("[data-delete-animal]");if(edit){editingAnimalId=edit.dataset.editAnimal;const a=data.animals.find(x=>x.id===editingAnimalId);if(!a)return;const form=$("#animalForm");Object.entries(a).forEach(([k,v])=>{if(form.elements[k])form.elements[k].value=v??""});openDialog("animalDialog")}
+if(del){
+  const id=del.dataset.deleteAnimal;
+  const password=prompt("Ingresa la contraseña para eliminar este bovino:");
+  if(password==="LHZ2026"){
+    if(confirm(`¿Eliminar el bovino ${id}? Los eventos anteriores se conservarán con su ID.`)){
+      data.animals=data.animals.filter(a=>a.id!==id);
+      persist();
+      renderAll();
+      toast("Bovino eliminado.");
+    }
+  }else if(password!==null){
+    toast("Contraseña incorrecta. No se eliminó el bovino.");
+  }
+}
+});
   $("#healthForm").addEventListener("submit",e=>{e.preventDefault();const h=Object.fromEntries(new FormData(e.currentTarget).entries());if(!h.animalId){toast("Primero registra un bovino.");return}data.health.push({...h,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});persist();closeDialog("healthDialog");renderAll();toast("Evento sanitario guardado.")});
   $("#reproForm").addEventListener("submit",e=>{e.preventDefault();const r=Object.fromEntries(new FormData(e.currentTarget).entries());if(!r.animalId){toast("Primero registra un bovino.");return}data.reproduction.push({...r,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});persist();closeDialog("reproDialog");renderAll();toast("Registro reproductivo guardado.")});
   $("#weightForm").addEventListener("submit",e=>{e.preventDefault();const w=Object.fromEntries(new FormData(e.currentTarget).entries());if(!w.animalId){toast("Primero registra un bovino.");return}w.weight=Number(w.weight);data.weights.push({...w,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});const a=data.animals.find(x=>x.id===w.animalId);if(a)a.weight=w.weight;persist();closeDialog("weightDialog");renderAll();toast("Pesaje guardado.")});
