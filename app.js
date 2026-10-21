@@ -184,15 +184,11 @@ if(del){
       loginMessage.textContent = "Correo o contraseña incorrectos.";
       return;
     }
-
     loginMessage.textContent = "Acceso correcto.";
     loginPanel.style.display = "none";
   });
 
-  supabaseClient.auth.getSession().then(({ data, error }) => {
-    if (error || !data.session) {
-      loginPanel.style.display = "flex";
-    }
-  });
-  setToday();renderAll();
+   loginPanel.style.display = "flex";
+  setToday();
+  renderAll();
 })();
