@@ -1,5 +1,8 @@
 (() => {
   "use strict";
+  const SUPABASE_URL = "https://bbazyngcorewknknnhgx.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_xGaO7pZT5QHytxpFV7tEUw_PgLyimBf";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const STORE_KEY = "los-hermanos-z-ganaderia-v1";
   const blankData = () => ({animals:[], health:[], reproduction:[], weights:[], paddocks:[]});
   let data = loadData();
