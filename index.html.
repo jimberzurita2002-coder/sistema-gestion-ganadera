@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Los Hermanos Z | Gestión Ganadera</title>
+<style>
+:root{--green:#205c3b;--light:#e9f3eb;--bg:#f4f7f4;--text:#203329}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--green);color:white;padding:24px 18px}
+header h1{margin:0;font-size:24px}
+header p{margin:8px 0 0;color:#d9eadc}
+nav{display:flex;gap:8px;padding:12px;overflow-x:auto;background:white;position:sticky;top:0;z-index:2}
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 14px;font-weight:bold}
+nav button{background:#edf2ed;color:var(--green);white-space:nowrap}
+nav button.active,.primary{background:var(--green);color:white}
+main{max-width:1000px;margin:auto;padding:18px}
+h2{margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card,form{background:white;border-radius:12px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px #163c2010}
+.stat{font-size:28px;font-weight:bold;color:var(--green);margin-top:8px}
+form{display:grid;gap:12px}
+label{font-size:14px;font-weight:bold}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccd7cd;border-radius:8px;margin-top:5px;font:inherit}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.item{background:white;padding:14px;border-radius:10px;margin:10px 0;border:1px solid #e0e8e0;overflow-wrap:anywhere}
+.item strong{color:var(--green)}
+.small{color:#66776b;font-size:13px}
+.hidden{display:none}
+.danger{background:#fbe9e7;color:#922}
+@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}header h1{font-size:21px}main{padding:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:32px">🐄 🌿</div>
+  <h1>ESTANCIA LOS HERMANOS Z</h1>
+  <p>Sistema de Gestión Ganadera Multiplataforma</p>
+</header>
+<nav id="nav">
+  <button class="active" data-tab="inicio">🏠 Inicio</button>
+  <button data-tab="ganado">🐂 Ganado</button>
+  <button data-tab="sanidad">💚 Sanidad</button>
+  <button data-tab="reproduccion">🐣 Reproducción</button>
+  <button data-tab="reportes">📊 Reportes</button>
+</nav>
+<main>
+<section id="inicio">
+<h2>Panel principal</h2>
+<p class="small">Resumen de los registros de la estancia.</p>
+<div class="stats">
+<div class="card">🐂<div class="small">Animales</div><div class="stat" id="total">0</div></div>
+<div class="card">💚<div class="small">Atenciones sanitarias</div><div class="stat" id="totalH">0</div></div>
+<div class="card">🐣<div class="small">Eventos reproductivos</div><div class="stat" id="totalR">0</div></div>
+</div>
+<div class="card"><h3>Bienvenido a tu estancia</h3><p>Administra los registros del ganado desde tu computadora o celular.</p><p class="small">Usa el menú superior para comenzar.</p></div>
+</section>
+
+<section id="ganado" class="hidden">
+<h2>Registro de ganado</h2>
+<form id="formAnimal">
+<div class="grid">
+<label>Arete o código *<input id="codigo" required placeholder="Ej. HZ-001"></label>
+<label>Nombre<input id="nombre" placeholder="Ej. Lucero"></label>
+<label>Raza<select id="raza"><option>Nelore</option><option>Brahman</option><option>Gir</option><option>Angus</option><option>Mestizo</option><option>Otra</option></select></label>
+<label>Sexo<select id="sexo"><option>Hembra</option><option>Macho</option></select></label>
+<label>Fecha de nacimiento<input id="nacimiento" type="date"></label>
+<label>Peso (kg)<input id="peso" type="number" min="0" step="0.1" placeholder="Ej. 280"></label>
+<label>Potrero<input id="potrero" placeholder="Ej. Potrero 1"></label>
+</div>
+<button class="primary">Guardar animal</button>
+</form>
+<input id="buscar" placeholder="🔎 Buscar animal por código, nombre o raza">
+<div id="listaAnimales"></div>
+</section>
+
+<section id="sanidad" class="hidden">
+<h2>Control sanitario</h2>
+<form id="formSalud">
+<label>Animal *<select id="animalSalud" required></select></label>
+<label>Tipo de atención<select id="tipoSalud"><option>Vacunación</option><option>Desparasitación</option><option>Consulta veterinaria</option><option>Tratamiento</option><option>Enfermedad</option><option>Otro</option></select></label>
+<label>Fecha *<input id="fechaSalud" type="date" required></label>
+<label>Detalle<textarea id="detalleSalud" rows="3" placeholder="Observaciones o tratamiento indicado"></textarea></label>
+<button class="primary">Guardar atención</button>
+</form>
+<div id="listaSalud"></div>
+</section>
+
+<section id="reproduccion" class="hidden">
+<h2>Control reproductivo</h2>
+<form id="formRepro">
+<label>Animal *<select id="animalRepro" required></select></label>
+<label>Evento<select id="tipoRepro"><option>Servicio / monta</option><option>Inseminación</option><option>Diagnóstico de gestación</option><option>Nacimiento</option><option>Pérdida gestacional</option><option>Otro</option></select></label>
+<label>Fecha *<input id="fechaRepro" type="date" required></label>
+<label>Observaciones<textarea id="detalleRepro" rows="3" placeholder="Datos del reproductor, ternero u observaciones"></textarea></label>
+<button class="primary">Guardar evento</button>
+</form>
+<div id="listaRepro"></div>
+</section>
+
+<section id="reportes" class="hidden">
+<h2>Reportes y estadísticas</h2>
+<div class="stats">
+<div class="card">Total de animales<div class="stat" id="repTotal">0</div></div>
+<div class="card">Hembras<div class="stat" id="repHembras">0</div></div>
+<div class="card">Machos<div class="stat" id="repMachos">0</div></div>
+</div>
+<div class="card"><h3>Distribución por raza</h3><div id="razas"></div></div>
+<div class="card"><h3>Registros de actividad</h3><p id="resumen"></p><button id="exportar" class="primary">Descargar reporte CSV</button></div>
+</section>
+<footer class="small" style="padding:20px 0">© Estancia Los Hermanos Z · Prototipo MVP</footer>
+</main>
+<script>
+const read=(key)=>{try{return JSON.parse(localStorage.getItem("hz_"+key))||[]}catch{return []}};
+const save=(key,data)=>localStorage.setItem("hz_"+key,JSON.stringify(data));
+let animales=read("animales"),salud=read("salud"),repro=read("repro");
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hoy(){return new Date().toLocaleDateString("en-CA")}
+function optionsAnimal(id){$(id).innerHTML='<option value="">Selecciona un animal</option>'+animales.map(a=>'<option value="'+esc(a.codigo)+'">'+esc(a.codigo+' · '+(a.nombre||a.raza))+'</option>').join('')}
+function render(){
+$("total").textContent=animales.length;$("totalH").textContent=salud.length;$("totalR").textContent=repro.length;
+$("repTotal").textContent=animales.length;$("repHembras").textContent=animales.filter(a=>a.sexo==="Hembra").length;$("repMachos").textContent=animales.filter(a=>a.sexo==="Macho").length;
+const q=($("buscar").value||"").toLowerCase();
+$("listaAnimales").innerHTML=animales.filter(a=>(a.codigo+" "+a.nombre+" "+a.raza+" "+a.potrero).toLowerCase().includes(q)).map(a=>'<div class="item"><strong>'+esc(a.codigo)+' · '+esc(a.nombre||"Sin nombre")+'</strong><p>'+esc(a.raza)+' · '+esc(a.sexo)+' · '+esc(a.peso||"Sin peso")+' kg</p><p class="small">Nacimiento: '+esc(a.nacimiento||"No registrado")+' · Potrero: '+esc(a.potrero||"No registrado")+'</p><button class="danger" data-delete="'+esc(a.codigo)+'">Eliminar</button></div>').join("")||'<p class="small">Todavía no hay animales registrados.</p>';
+$("listaSalud").innerHTML=salud.map((s,i)=>'<div class="item"><strong>'+esc(s.tipo)+'</strong><p>'+esc(s.codigo)+' · '+esc(s.fecha)+'</p><p>'+esc(s.detalle)+'</p><button class="danger" data-salud="'+i+'">Eliminar</button></div>').join("")||'<p class="small">No hay atenciones registradas.</p>';
+$("listaRepro").innerHTML=repro.map((r,i)=>'<div class="item"><strong>'+esc(r.tipo)+'</strong><p>'+esc(r.codigo)+' · '+esc(r.fecha)+'</p><p>'+esc(r.detalle)+'</p><button class="danger" data-repro="'+i+'">Eliminar</button></div>').join("")||'<p class="small">No hay eventos registrados.</p>';
+optionsAnimal("animalSalud");optionsAnimal("animalRepro");
+const razas={};animales.forEach(a=>razas[a.raza]=(razas[a.raza]||0)+1);
+$("razas").innerHTML=Object.keys(razas).map(r=>'<p>'+esc(r)+': <strong>'+razas[r]+'</strong></p>').join("")||"Registra animales para ver estadísticas.";
+$("resumen").textContent=salud.length+" atenciones sanitarias; "+repro.length+" eventos reproductivos; "+repro.filter(r=>r.tipo==="Nacimiento").length+" nacimientos anotados.";
+}
+$("nav").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));render()});
+$("formAnimal").addEventListener("submit",e=>{e.preventDefault();const codigo=$("codigo").value.trim();if(animales.some(a=>a.codigo.toLowerCase()===codigo.toLowerCase()))return alert("Ese código ya existe.");animales.push({codigo,nombre:$("nombre").value.trim(),raza:$("raza").value,sexo:$("sexo").value,nacimiento:$("nacimiento").value,peso:$("peso").value,potrero:$("potrero").value.trim()});save("animales",animales);e.target.reset();render();alert("Animal registrado correctamente.")});
+$("formSalud").addEventListener("submit",e=>{e.preventDefault();if(!animales.length)return alert("Registra primero un animal.");salud.unshift({codigo:$("animalSalud").value,tipo:$("tipoSalud").value,fecha:$("fechaSalud").value,detalle:$("detalleSalud").value.trim()});save("salud",salud);e.target.reset();render();alert("Atención guardada.")});
+$("formRepro").addEventListener("submit",e=>{e.preventDefault();if(!animales.length)return alert("Registra primero un animal.");repro.unshift({codigo:$("animalRepro").value,tipo:$("tipoRepro").value,fecha:$("fechaRepro").value,detalle:$("detalleRepro").value.trim()});save("repro",repro);e.target.reset();render();alert("Evento reproductivo guardado.")});
+$("buscar").addEventListener("input",render);
+document.addEventListener("click",e=>{const d=e.target.dataset;if(d.delete){if(confirm("¿Eliminar el animal y sus historiales?")){animales=animales.filter(a=>a.codigo!==d.delete);salud=salud.filter(s=>s.codigo!==d.delete);repro=repro.filter(r=>r.codigo!==d.delete);save("animales",animales);save("salud",salud);save("repro",repro);render()}}if(d.salud!==undefined){salud.splice(Number(d.salud),1);save("salud",salud);render()}if(d.repro!==undefined){repro.splice(Number(d.repro),1);save("repro",repro);render()}});
+$("exportar").addEventListener("click",()=>{const rows=[["Codigo","Nombre","Raza","Sexo","Nacimiento","Peso kg","Potrero"],...animales.map(a=>[a.codigo,a.nombre,a.raza,a.sexo,a.nacimiento,a.peso,a.potrero])];const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const url=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="reporte-ganadero-los-hermanos-z.csv";a.click();URL.revokeObjectURL(url)});
+$("fechaSalud").value=hoy();$("fechaRepro").value=hoy();render();
+</script>
+</body>
+</html>
