@@ -121,6 +121,20 @@
     <label>Peso (kg) *<input name="weight" type="number" min="0.1" step="0.1" required placeholder="Ej. 235"></label><label>Observaciones<input name="notes" maxlength="150" placeholder="Opcional"></label>
   </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="weightDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar pesaje</button></div></form></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="loginPanel" style="display:none;position:fixed;inset:0;z-index:9999;background:#101b14;color:white;align-items:center;justify-content:center;padding:20px;">
+  <form id="loginForm" style="width:100%;max-width:380px;padding:28px;border-radius:16px;background:#1d3023;display:grid;gap:16px;">
+    <h2>LOS HERMANOS Z</h2>
+    <p>Inicio de sesión del Sistema Ganadero</p>
+    <label>Correo electrónico
+      <input id="loginEmail" type="email" required autocomplete="username">
+    </label>
+    <label>Contraseña
+      <input id="loginPassword" type="password" required autocomplete="current-password">
+    </label>
+    <button type="submit">Ingresar</button>
+    <p id="loginMessage" role="status"></p>
+  </form>
+</div>
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
