@@ -1,144 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Los Hermanos Z | Gestión Ganadera</title>
-<style>
-:root{--green:#205c3b;--light:#e9f3eb;--bg:#f4f7f4;--text:#203329}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
-header{background:var(--green);color:white;padding:24px 18px}
-header h1{margin:0;font-size:24px}
-header p{margin:8px 0 0;color:#d9eadc}
-nav{display:flex;gap:8px;padding:12px;overflow-x:auto;background:white;position:sticky;top:0;z-index:2}
-button{cursor:pointer;border:0;border-radius:8px;padding:11px 14px;font-weight:bold}
-nav button{background:#edf2ed;color:var(--green);white-space:nowrap}
-nav button.active,.primary{background:var(--green);color:white}
-main{max-width:1000px;margin:auto;padding:18px}
-h2{margin-top:0}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.card,form{background:white;border-radius:12px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px #163c2010}
-.stat{font-size:28px;font-weight:bold;color:var(--green);margin-top:8px}
-form{display:grid;gap:12px}
-label{font-size:14px;font-weight:bold}
-input,select,textarea{width:100%;padding:12px;border:1px solid #ccd7cd;border-radius:8px;margin-top:5px;font:inherit}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.item{background:white;padding:14px;border-radius:10px;margin:10px 0;border:1px solid #e0e8e0;overflow-wrap:anywhere}
-.item strong{color:var(--green)}
-.small{color:#66776b;font-size:13px}
-.hidden{display:none}
-.danger{background:#fbe9e7;color:#922}
-@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}header h1{font-size:21px}main{padding:12px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173f2a">
+  <title>Sistema de Gestión Ganadera | Los Hermanos Z</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
-  <div style="font-size:32px">🐄 🌿</div>
-  <h1>ESTANCIA LOS HERMANOS Z</h1>
-  <p>Sistema de Gestión Ganadera Multiplataforma</p>
-</header>
-<nav id="nav">
-  <button class="active" data-tab="inicio">🏠 Inicio</button>
-  <button data-tab="ganado">🐂 Ganado</button>
-  <button data-tab="sanidad">💚 Sanidad</button>
-  <button data-tab="reproduccion">🐣 Reproducción</button>
-  <button data-tab="reportes">📊 Reportes</button>
-</nav>
-<main>
-<section id="inicio">
-<h2>Panel principal</h2>
-<p class="small">Resumen de los registros de la estancia.</p>
-<div class="stats">
-<div class="card">🐂<div class="small">Animales</div><div class="stat" id="total">0</div></div>
-<div class="card">💚<div class="small">Atenciones sanitarias</div><div class="stat" id="totalH">0</div></div>
-<div class="card">🐣<div class="small">Eventos reproductivos</div><div class="stat" id="totalR">0</div></div>
-</div>
-<div class="card"><h3>Bienvenido a tu estancia</h3><p>Administra los registros del ganado desde tu computadora o celular.</p><p class="small">Usa el menú superior para comenzar.</p></div>
-</section>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">LH<span>Z</span></div>
+        <div><strong>LOS HERMANOS Z</strong><small>Gestión ganadera</small></div>
+      </div>
+      <div class="farm-label">ESTANCIA · BOLIVIA</div>
+      <nav class="nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="dashboard"><span>▦</span> Panel principal</button>
+        <button class="nav-item" data-view="animals"><span>🐄</span> Registro de bovinos</button>
+        <button class="nav-item" data-view="health"><span>✚</span> Sanidad animal</button>
+        <button class="nav-item" data-view="reproduction"><span>♡</span> Reproducción</button>
+        <button class="nav-item" data-view="weights"><span>↗</span> Peso y producción</button>
+        <button class="nav-item" data-view="paddocks"><span>⌖</span> Potreros</button>
+        <button class="nav-item" data-view="reports"><span>▥</span> Reportes</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="offline-dot"></div><span>Versión inicial · Datos en este navegador</span>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
+        <div><div class="eyebrow">ESTANCIA GANADERA</div><h1 id="pageTitle">Panel principal</h1></div>
+        <div class="top-actions"><span class="today" id="today"></span><div class="avatar">LH</div></div>
+      </header>
+      <section class="content">
+        <div id="dashboardView" class="view">
+          <div class="welcome">
+            <div><div class="eyebrow light">BIENVENIDO AL SISTEMA</div><h2>El control de tu ganado,<br>en un solo lugar.</h2><p>Administra el hato de Los Hermanos Z de forma sencilla.</p></div>
+            <div class="welcome-cow" aria-hidden="true">🐂</div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-icon green">🐄</div><div class="stat-label">Animales registrados</div><div class="stat-value" id="statAnimals">0</div><div class="stat-foot">En el registro actual</div></article>
+            <article class="stat-card"><div class="stat-icon amber">✚</div><div class="stat-label">Eventos sanitarios</div><div class="stat-value" id="statHealth">0</div><div class="stat-foot">Tratamientos y vacunas</div></article>
+            <article class="stat-card"><div class="stat-icon purple">♡</div><div class="stat-label">Registros reproductivos</div><div class="stat-value" id="statRepro">0</div><div class="stat-foot">Servicios, partos y gestación</div></article>
+            <article class="stat-card"><div class="stat-icon blue">⚖</div><div class="stat-label">Pesajes registrados</div><div class="stat-value" id="statWeights">0</div><div class="stat-foot">Control de peso</div></article>
+          </div>
+          <div class="two-col">
+            <section class="panel"><div class="panel-heading"><div><h3>Accesos rápidos</h3><p>Registra una actividad de la estancia.</p></div></div><div class="quick-actions">
+              <button class="quick-action" data-open="animals"><span>＋</span><b>Registrar bovino</b><small>Agregar un animal al hato</small></button>
+              <button class="quick-action" data-open="health"><span>✚</span><b>Evento sanitario</b><small>Vacuna o tratamiento</small></button>
+              <button class="quick-action" data-open="reproduction"><span>♡</span><b>Reproducción</b><small>Servicio o nacimiento</small></button>
+              <button class="quick-action" data-open="weights"><span>⚖</span><b>Registrar peso</b><small>Guardar un nuevo pesaje</small></button>
+            </div></section>
+            <section class="panel"><div class="panel-heading"><div><h3>Actividad reciente</h3><p>Últimos registros guardados</p></div><button class="text-btn" data-open="reports">Ver reportes →</button></div><div id="recentActivity" class="empty-state"><div class="empty-icon">▤</div><b>Aún no hay actividad</b><p>Cuando registres animales o eventos, aparecerán aquí.</p></div></section>
+          </div>
+          <div class="notice"><span>ⓘ</span><div><b>Importante sobre tus datos</b><p>Esta versión guarda los registros en el navegador de este dispositivo. Todavía no se sincronizan entre celulares y computadoras. Para producción, conectaremos una base de datos en línea y acceso con contraseña.</p></div></div>
+        </div>
 
-<section id="ganado" class="hidden">
-<h2>Registro de ganado</h2>
-<form id="formAnimal">
-<div class="grid">
-<label>Arete o código *<input id="codigo" required placeholder="Ej. HZ-001"></label>
-<label>Nombre<input id="nombre" placeholder="Ej. Lucero"></label>
-<label>Raza<select id="raza"><option>Nelore</option><option>Brahman</option><option>Gir</option><option>Angus</option><option>Mestizo</option><option>Otra</option></select></label>
-<label>Sexo<select id="sexo"><option>Hembra</option><option>Macho</option></select></label>
-<label>Fecha de nacimiento<input id="nacimiento" type="date"></label>
-<label>Peso (kg)<input id="peso" type="number" min="0" step="0.1" placeholder="Ej. 280"></label>
-<label>Potrero<input id="potrero" placeholder="Ej. Potrero 1"></label>
-</div>
-<button class="primary">Guardar animal</button>
-</form>
-<input id="buscar" placeholder="🔎 Buscar animal por código, nombre o raza">
-<div id="listaAnimales"></div>
-</section>
+        <div id="animalsView" class="view hidden">
+          <div class="section-intro"><div><h2>Registro de bovinos</h2><p>Identifica y consulta cada animal de la estancia.</p></div><button class="primary-btn" id="addAnimalBtn">＋ Nuevo bovino</button></div>
+          <div class="toolbar"><input id="animalSearch" type="search" placeholder="Buscar por arete, raza o nombre…"><select id="animalFilter"><option value="">Todas las razas</option><option>Brahman</option><option>Nelore</option><option>Gyr</option><option>Cruce</option><option>Otra</option></select></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Arete / ID</th><th>Nombre</th><th>Raza</th><th>Sexo</th><th>Nacimiento</th><th>Peso (kg)</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="animalsTable"></tbody></table></div><div id="animalsEmpty" class="empty-state"><div class="empty-icon">🐄</div><b>No hay bovinos registrados</b><p>Usa “Nuevo bovino” para agregar el primero.</p></div></div>
+        </div>
 
-<section id="sanidad" class="hidden">
-<h2>Control sanitario</h2>
-<form id="formSalud">
-<label>Animal *<select id="animalSalud" required></select></label>
-<label>Tipo de atención<select id="tipoSalud"><option>Vacunación</option><option>Desparasitación</option><option>Consulta veterinaria</option><option>Tratamiento</option><option>Enfermedad</option><option>Otro</option></select></label>
-<label>Fecha *<input id="fechaSalud" type="date" required></label>
-<label>Detalle<textarea id="detalleSalud" rows="3" placeholder="Observaciones o tratamiento indicado"></textarea></label>
-<button class="primary">Guardar atención</button>
-</form>
-<div id="listaSalud"></div>
-</section>
+        <div id="healthView" class="view hidden">
+          <div class="section-intro"><div><h2>Sanidad animal</h2><p>Vacunas, desparasitaciones, enfermedades y tratamientos.</p></div><button class="primary-btn" id="addHealthBtn">＋ Nuevo evento</button></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Animal / arete</th><th>Tipo</th><th>Detalle</th><th>Próxima fecha</th><th>Observaciones</th></tr></thead><tbody id="healthTable"></tbody></table></div><div id="healthEmpty" class="empty-state"><div class="empty-icon">✚</div><b>No hay eventos sanitarios</b><p>Registra las vacunas y tratamientos realizados.</p></div></div>
+        </div>
 
-<section id="reproduccion" class="hidden">
-<h2>Control reproductivo</h2>
-<form id="formRepro">
-<label>Animal *<select id="animalRepro" required></select></label>
-<label>Evento<select id="tipoRepro"><option>Servicio / monta</option><option>Inseminación</option><option>Diagnóstico de gestación</option><option>Nacimiento</option><option>Pérdida gestacional</option><option>Otro</option></select></label>
-<label>Fecha *<input id="fechaRepro" type="date" required></label>
-<label>Observaciones<textarea id="detalleRepro" rows="3" placeholder="Datos del reproductor, ternero u observaciones"></textarea></label>
-<button class="primary">Guardar evento</button>
-</form>
-<div id="listaRepro"></div>
-</section>
+        <div id="reproductionView" class="view hidden">
+          <div class="section-intro"><div><h2>Reproducción</h2><p>Seguimiento de servicios, gestaciones, partos y nacimientos.</p></div><button class="primary-btn" id="addReproBtn">＋ Nuevo registro</button></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Madre / arete</th><th>Evento</th><th>Padre / toro</th><th>Resultado / notas</th></tr></thead><tbody id="reproTable"></tbody></table></div><div id="reproEmpty" class="empty-state"><div class="empty-icon">♡</div><b>No hay registros reproductivos</b><p>Agrega servicios, diagnósticos o nacimientos.</p></div></div>
+        </div>
 
-<section id="reportes" class="hidden">
-<h2>Reportes y estadísticas</h2>
-<div class="stats">
-<div class="card">Total de animales<div class="stat" id="repTotal">0</div></div>
-<div class="card">Hembras<div class="stat" id="repHembras">0</div></div>
-<div class="card">Machos<div class="stat" id="repMachos">0</div></div>
-</div>
-<div class="card"><h3>Distribución por raza</h3><div id="razas"></div></div>
-<div class="card"><h3>Registros de actividad</h3><p id="resumen"></p><button id="exportar" class="primary">Descargar reporte CSV</button></div>
-</section>
-<footer class="small" style="padding:20px 0">© Estancia Los Hermanos Z · Prototipo MVP</footer>
-</main>
-<script>
-const read=(key)=>{try{return JSON.parse(localStorage.getItem("hz_"+key))||[]}catch{return []}};
-const save=(key,data)=>localStorage.setItem("hz_"+key,JSON.stringify(data));
-let animales=read("animales"),salud=read("salud"),repro=read("repro");
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function hoy(){return new Date().toLocaleDateString("en-CA")}
-function optionsAnimal(id){$(id).innerHTML='<option value="">Selecciona un animal</option>'+animales.map(a=>'<option value="'+esc(a.codigo)+'">'+esc(a.codigo+' · '+(a.nombre||a.raza))+'</option>').join('')}
-function render(){
-$("total").textContent=animales.length;$("totalH").textContent=salud.length;$("totalR").textContent=repro.length;
-$("repTotal").textContent=animales.length;$("repHembras").textContent=animales.filter(a=>a.sexo==="Hembra").length;$("repMachos").textContent=animales.filter(a=>a.sexo==="Macho").length;
-const q=($("buscar").value||"").toLowerCase();
-$("listaAnimales").innerHTML=animales.filter(a=>(a.codigo+" "+a.nombre+" "+a.raza+" "+a.potrero).toLowerCase().includes(q)).map(a=>'<div class="item"><strong>'+esc(a.codigo)+' · '+esc(a.nombre||"Sin nombre")+'</strong><p>'+esc(a.raza)+' · '+esc(a.sexo)+' · '+esc(a.peso||"Sin peso")+' kg</p><p class="small">Nacimiento: '+esc(a.nacimiento||"No registrado")+' · Potrero: '+esc(a.potrero||"No registrado")+'</p><button class="danger" data-delete="'+esc(a.codigo)+'">Eliminar</button></div>').join("")||'<p class="small">Todavía no hay animales registrados.</p>';
-$("listaSalud").innerHTML=salud.map((s,i)=>'<div class="item"><strong>'+esc(s.tipo)+'</strong><p>'+esc(s.codigo)+' · '+esc(s.fecha)+'</p><p>'+esc(s.detalle)+'</p><button class="danger" data-salud="'+i+'">Eliminar</button></div>').join("")||'<p class="small">No hay atenciones registradas.</p>';
-$("listaRepro").innerHTML=repro.map((r,i)=>'<div class="item"><strong>'+esc(r.tipo)+'</strong><p>'+esc(r.codigo)+' · '+esc(r.fecha)+'</p><p>'+esc(r.detalle)+'</p><button class="danger" data-repro="'+i+'">Eliminar</button></div>').join("")||'<p class="small">No hay eventos registrados.</p>';
-optionsAnimal("animalSalud");optionsAnimal("animalRepro");
-const razas={};animales.forEach(a=>razas[a.raza]=(razas[a.raza]||0)+1);
-$("razas").innerHTML=Object.keys(razas).map(r=>'<p>'+esc(r)+': <strong>'+razas[r]+'</strong></p>').join("")||"Registra animales para ver estadísticas.";
-$("resumen").textContent=salud.length+" atenciones sanitarias; "+repro.length+" eventos reproductivos; "+repro.filter(r=>r.tipo==="Nacimiento").length+" nacimientos anotados.";
-}
-$("nav").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));$(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));render()});
-$("formAnimal").addEventListener("submit",e=>{e.preventDefault();const codigo=$("codigo").value.trim();if(animales.some(a=>a.codigo.toLowerCase()===codigo.toLowerCase()))return alert("Ese código ya existe.");animales.push({codigo,nombre:$("nombre").value.trim(),raza:$("raza").value,sexo:$("sexo").value,nacimiento:$("nacimiento").value,peso:$("peso").value,potrero:$("potrero").value.trim()});save("animales",animales);e.target.reset();render();alert("Animal registrado correctamente.")});
-$("formSalud").addEventListener("submit",e=>{e.preventDefault();if(!animales.length)return alert("Registra primero un animal.");salud.unshift({codigo:$("animalSalud").value,tipo:$("tipoSalud").value,fecha:$("fechaSalud").value,detalle:$("detalleSalud").value.trim()});save("salud",salud);e.target.reset();render();alert("Atención guardada.")});
-$("formRepro").addEventListener("submit",e=>{e.preventDefault();if(!animales.length)return alert("Registra primero un animal.");repro.unshift({codigo:$("animalRepro").value,tipo:$("tipoRepro").value,fecha:$("fechaRepro").value,detalle:$("detalleRepro").value.trim()});save("repro",repro);e.target.reset();render();alert("Evento reproductivo guardado.")});
-$("buscar").addEventListener("input",render);
-document.addEventListener("click",e=>{const d=e.target.dataset;if(d.delete){if(confirm("¿Eliminar el animal y sus historiales?")){animales=animales.filter(a=>a.codigo!==d.delete);salud=salud.filter(s=>s.codigo!==d.delete);repro=repro.filter(r=>r.codigo!==d.delete);save("animales",animales);save("salud",salud);save("repro",repro);render()}}if(d.salud!==undefined){salud.splice(Number(d.salud),1);save("salud",salud);render()}if(d.repro!==undefined){repro.splice(Number(d.repro),1);save("repro",repro);render()}});
-$("exportar").addEventListener("click",()=>{const rows=[["Codigo","Nombre","Raza","Sexo","Nacimiento","Peso kg","Potrero"],...animales.map(a=>[a.codigo,a.nombre,a.raza,a.sexo,a.nacimiento,a.peso,a.potrero])];const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const url=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="reporte-ganadero-los-hermanos-z.csv";a.click();URL.revokeObjectURL(url)});
-$("fechaSalud").value=hoy();$("fechaRepro").value=hoy();render();
-</script>
+        <div id="weightsView" class="view hidden">
+          <div class="section-intro"><div><h2>Peso y producción</h2><p>Registra pesajes para consultar la evolución de cada bovino.</p></div><button class="primary-btn" id="addWeightBtn">＋ Registrar peso</button></div>
+          <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Animal / arete</th><th>Peso (kg)</th><th>Observaciones</th></tr></thead><tbody id="weightsTable"></tbody></table></div><div id="weightsEmpty" class="empty-state"><div class="empty-icon">⚖</div><b>No hay pesajes registrados</b><p>Agrega el primer pesaje de un animal.</p></div></div>
+        </div>
+
+        <div id="paddocksView" class="view hidden">
+          <div class="section-intro"><div><h2>Potreros</h2><p>Registro básico de potreros y movimientos del ganado.</p></div><button class="primary-btn" id="addPaddockBtn">＋ Nuevo potrero</button></div>
+          <div class="panel"><div class="toolbar"><input id="paddockName" placeholder="Nombre del potrero"><input id="paddockArea" type="number" min="0" step="0.1" placeholder="Superficie (ha)"><button class="primary-btn" id="savePaddockBtn">Guardar potrero</button></div><div id="paddockList" class="paddock-grid"></div><div id="paddockEmpty" class="empty-state"><div class="empty-icon">⌖</div><b>Aún no hay potreros</b><p>Registra el nombre y superficie de cada potrero.</p></div></div>
+          <div class="notice"><span>ⓘ</span><div><b>Alcance de esta versión</b><p>Este módulo registra potreros y superficie. El historial de movimientos entre potreros se puede agregar en una siguiente etapa.</p></div></div>
+        </div>
+
+        <div id="reportsView" class="view hidden">
+          <div class="section-intro"><div><h2>Reportes</h2><p>Resumen actual de la información registrada.</p></div><button class="secondary-btn" id="exportBtn">↓ Exportar datos (JSON)</button></div>
+          <div class="stats-grid report-stats"><article class="stat-card"><div class="stat-label">Total de bovinos</div><div class="stat-value" id="reportAnimals">0</div></article><article class="stat-card"><div class="stat-label">Hembras</div><div class="stat-value" id="reportFemales">0</div></article><article class="stat-card"><div class="stat-label">Machos</div><div class="stat-value" id="reportMales">0</div></article><article class="stat-card"><div class="stat-label">Potreros registrados</div><div class="stat-value" id="reportPaddocks">0</div></article></div>
+          <div class="panel"><div class="panel-heading"><div><h3>Distribución por raza</h3><p>Según los bovinos registrados.</p></div></div><div id="breedReport" class="breed-report"></div></div>
+          <div class="panel export-panel"><h3>Respaldo de información</h3><p>Exporta un archivo para guardar una copia de los registros de este navegador. Puedes importarlo en el futuro si agregamos esa función.</p><button class="secondary-btn" id="exportBtn2">Descargar respaldo JSON</button></div>
+        </div>
+      </section>
+      <footer>© <span id="year"></span> Estancia Los Hermanos Z <span>·</span> Sistema de Gestión Ganadera Multiplataforma</footer>
+    </main>
+  </div>
+
+  <dialog id="animalDialog" class="modal"><form id="animalForm" method="dialog"><div class="modal-head"><div><div class="eyebrow">REGISTRO INDIVIDUAL</div><h2 id="animalDialogTitle">Nuevo bovino</h2></div><button type="button" class="close-btn" data-close="animalDialog">×</button></div><div class="form-grid">
+    <label>Arete / ID *<input name="id" required maxlength="40" placeholder="Ej. HZ-001"></label><label>Nombre (opcional)<input name="name" maxlength="60" placeholder="Ej. Lucera"></label>
+    <label>Raza *<select name="breed" required><option value="">Seleccionar</option><option>Brahman</option><option>Nelore</option><option>Gyr</option><option>Cruce</option><option>Otra</option></select></label><label>Sexo *<select name="sex" required><option value="">Seleccionar</option><option>Hembra</option><option>Macho</option></select></label>
+    <label>Fecha de nacimiento<input name="birth" type="date"></label><label>Peso actual (kg)<input name="weight" type="number" min="0" step="0.1" placeholder="Ej. 180"></label>
+    <label>Procedencia<input name="origin" maxlength="100" placeholder="Ej. Nacido en la estancia"></label><label>Estado<select name="status"><option>Activo</option><option>Vendido</option><option>Fallecido</option><option>Trasladado</option></select></label>
+    <label class="full">Observaciones<textarea name="notes" rows="3" placeholder="Señas, color, detalles…"></textarea></label>
+  </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="animalDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar bovino</button></div></form></dialog>
+
+  <dialog id="healthDialog" class="modal"><form id="healthForm" method="dialog"><div class="modal-head"><div><div class="eyebrow">SANIDAD ANIMAL</div><h2>Nuevo evento sanitario</h2></div><button type="button" class="close-btn" data-close="healthDialog">×</button></div><div class="form-grid">
+    <label>Fecha *<input name="date" type="date" required></label><label>Animal *<select name="animalId" required class="animal-options"></select></label>
+    <label>Tipo *<select name="type" required><option>Vacuna</option><option>Desparasitación</option><option>Tratamiento</option><option>Enfermedad</option><option>Revisión</option><option>Otro</option></select></label><label>Próxima fecha<input name="nextDate" type="date"></label>
+    <label class="full">Detalle *<input name="detail" required maxlength="150" placeholder="Producto, motivo o diagnóstico"></label><label class="full">Observaciones<textarea name="notes" rows="3"></textarea></label>
+  </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="healthDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar evento</button></div></form></dialog>
+
+  <dialog id="reproDialog" class="modal"><form id="reproForm" method="dialog"><div class="modal-head"><div><div class="eyebrow">CONTROL REPRODUCTIVO</div><h2>Nuevo registro reproductivo</h2></div><button type="button" class="close-btn" data-close="reproDialog">×</button></div><div class="form-grid">
+    <label>Fecha *<input name="date" type="date" required></label><label>Madre / animal *<select name="animalId" required class="animal-options"></select></label>
+    <label>Evento *<select name="type" required><option>Servicio</option><option>Inseminación</option><option>Diagnóstico de gestación</option><option>Parto</option><option>Nacimiento</option><option>Aborto</option><option>Otro</option></select></label><label>Padre / toro<input name="sire" maxlength="80" placeholder="Identificación del toro"></label>
+    <label class="full">Resultado / notas<input name="result" maxlength="180" placeholder="Ej. Nació un ternero sano"></label>
+  </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="reproDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar registro</button></div></form></dialog>
+
+  <dialog id="weightDialog" class="modal"><form id="weightForm" method="dialog"><div class="modal-head"><div><div class="eyebrow">PESO Y PRODUCCIÓN</div><h2>Registrar pesaje</h2></div><button type="button" class="close-btn" data-close="weightDialog">×</button></div><div class="form-grid">
+    <label>Fecha *<input name="date" type="date" required></label><label>Animal *<select name="animalId" required class="animal-options"></select></label>
+    <label>Peso (kg) *<input name="weight" type="number" min="0.1" step="0.1" required placeholder="Ej. 235"></label><label>Observaciones<input name="notes" maxlength="150" placeholder="Opcional"></label>
+  </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="weightDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar pesaje</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
 </body>
 </html>
