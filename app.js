@@ -54,5 +54,32 @@ if(del){
   $("#weightForm").addEventListener("submit",e=>{e.preventDefault();const w=Object.fromEntries(new FormData(e.currentTarget).entries());if(!w.animalId){toast("Primero registra un bovino.");return}w.weight=Number(w.weight);data.weights.push({...w,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});const a=data.animals.find(x=>x.id===w.animalId);if(a)a.weight=w.weight;persist();closeDialog("weightDialog");renderAll();toast("Pesaje guardado.")});
   $("#savePaddockBtn").addEventListener("click",()=>{const name=$("#paddockName").value.trim(),area=Number($("#paddockArea").value);if(!name){toast("Escribe el nombre del potrero.");return}if($("#paddockArea").value!==""&&area<0){toast("La superficie no puede ser negativa.");return}data.paddocks.push({id:String(Date.now()),name,area:area||0});persist();$("#paddockName").value="";$("#paddockArea").value="";renderAll();toast("Potrero guardado.")});
   $("#paddockList").addEventListener("click",e=>{const b=e.target.closest("[data-delete-paddock]");if(b&&confirm("¿Eliminar este potrero?")){data.paddocks=data.paddocks.filter(p=>p.id!==b.dataset.deletePaddock);persist();renderAll();toast("Potrero eliminado.")}});
+    const loginPanel = $("#loginPanel");
+  const loginForm = $("#loginForm");
+  const loginMessage = $("#loginMessage");
+
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginMessage.textContent = "Verificando acceso...";
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: $("#loginEmail").value.trim(),
+      password: $("#loginPassword").value
+    });
+
+    if (error) {
+      loginMessage.textContent = "Correo o contraseña incorrectos.";
+      return;
+    }
+
+    loginMessage.textContent = "Acceso correcto.";
+    loginPanel.style.display = "none";
+  });
+
+  supabaseClient.auth.getSession().then(({ data, error }) => {
+    if (error || !data.session) {
+      loginPanel.style.display = "flex";
+    }
+  });
   setToday();renderAll();
 })();
