@@ -191,4 +191,96 @@ if(del){
    loginPanel.style.display = "flex";
   setToday();
   renderAll();
+
+  function renderCharts3D() {
+    if (typeof Plotly === "undefined") return;
+
+    const breedBox = document.getElementById("breedChart3D");
+    const statsBox = document.getElementById("statsChart3D");
+    if (!breedBox || !statsBox) return;
+
+    const breeds = ["Brahman", "Nelore", "Gyr", "Cruce", "Otra"];
+    const breedCounts = breeds.map(b =>
+      data.animals.filter(a => a.breed === b).length
+    );
+
+    Plotly.react("breedChart3D", [{
+      type: "scatter3d",
+      mode: "markers+text",
+      x: breeds.map((_, i) => i + 1),
+      y: breedCounts,
+      z: breedCounts.map((n, i) => i + 1),
+      text: breeds.map((b, i) => `${b}: ${breedCounts[i]}`),
+      textposition: "top center",
+      marker: {
+        size: breedCounts.map(n => Math.max(6, Math.min(18, n + 6))),
+        color: breedCounts,
+        colorscale: "Greens",
+        opacity: 0.9
+      },
+      hovertemplate: "%{text}<extra></extra>"
+    }], {
+      title: "Bovinos por raza",
+      paper_bgcolor: "rgba(0,0,0,0)",
+      font: { color: "#315344" },
+      scene: {
+        xaxis: { title: "Raza", tickvals: [1,2,3,4,5], ticktext: breeds },
+        yaxis: { title: "Cantidad", rangemode: "tozero" },
+        zaxis: { title: "Nivel visual" }
+      },
+      margin: { l: 0, r: 0, t: 45, b: 0 }
+    }, { responsive: true });
+
+    const labels = ["Animales", "Sanidad", "Reproducción", "Pesajes", "Potreros"];
+    const values = [
+      data.animals.length,
+      data.health.length,
+      data.reproduction.length,
+      data.weights.length,
+      data.paddocks.length
+    ];
+
+    Plotly.react("statsChart3D", [{
+      type: "scatter3d",
+      mode: "markers+text",
+      x: labels.map((_, i) => i + 1),
+      y: values,
+      z: values.map((n, i) => n + i * 0.1),
+      text: labels.map((label, i) => `${label}: ${values[i]}`),
+      textposition: "top center",
+      marker: {
+        size: values.map(n => Math.max(6, Math.min(18, n + 6))),
+        color: values,
+        colorscale: "Viridis",
+        opacity: 0.9
+      },
+      hovertemplate: "%{text}<extra></extra>"
+    }], {
+      title: "Registros de la estancia",
+      paper_bgcolor: "rgba(0,0,0,0)",
+      font: { color: "#315344" },
+      scene: {
+        xaxis: { title: "Tipo", tickvals: [1,2,3,4,5], ticktext: labels },
+        yaxis: { title: "Cantidad", rangemode: "tozero" },
+        zaxis: { title: "Nivel visual" }
+      },
+      margin: { l: 0, r: 0, t: 45, b: 0 }
+    }, { responsive: true });
+  }
+
+  const originalRenderReports = renderReports;
+  renderReports = function() {
+    originalRenderReports();
+    renderCharts3D();
+  };
+
+  window.addEventListener("resize", () => {
+    if (typeof Plotly !== "undefined") {
+      ["breedChart3D", "statsChart3D"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) Plotly.Plots.resize(el);
+      });
+    }
+  });
+
 })();
