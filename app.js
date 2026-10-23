@@ -170,7 +170,7 @@ if(del){
   $("#savePaddockBtn").addEventListener("click",()=>{const name=$("#paddockName").value.trim(),area=Number($("#paddockArea").value);if(!name){toast("Escribe el nombre del potrero.");return}if($("#paddockArea").value!==""&&area<0){toast("La superficie no puede ser negativa.");return}data.paddocks.push({id:String(Date.now()),name,area:area||0});persist();$("#paddockName").value="";$("#paddockArea").value="";renderAll();toast("Potrero guardado.")});
   $("#paddockList").addEventListener("click",e=>{const b=e.target.closest("[data-delete-paddock]");if(b&&confirm("¿Eliminar este potrero?")){data.paddocks=data.paddocks.filter(p=>p.id!==b.dataset.deletePaddock);persist();renderAll();toast("Potrero eliminado.")}});
    
-  const loginPanel = $("#loginPanel");
+    const loginPanel = $("#loginPanel");
   const loginForm = $("#loginForm");
   const loginMessage = $("#loginMessage");
 
@@ -184,6 +184,34 @@ if(del){
     }
 
     loginPanel.style.display = "none";
+
+    const user = sessionData.session.user;
+
+    const { data: animals, error: animalsError } =
+      await supabaseClient
+        .from("animals")
+        .select("*")
+        .eq("user_id", user.id);
+
+    if (animalsError) {
+      console.error("Error cargando bovinos:", animalsError.message);
+      toast("No se pudieron cargar los bovinos de Supabase.");
+      return;
+    }
+
+    data.animals = (animals || []).map(a => ({
+      id: a.animal_code,
+      name: a.name || "",
+      breed: a.breed || "",
+      sex: a.sex || "",
+      birth: a.birth_date || "",
+      weight: "",
+      origin: "",
+      status: a.category || "Activo",
+      notes: a.notes || ""
+    }));
+
+    renderAll();
   }
 
   loginForm.addEventListener("submit", async (e) => {
