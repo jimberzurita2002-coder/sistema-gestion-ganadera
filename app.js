@@ -231,7 +231,22 @@ if(del){
     loginMessage.textContent = "Acceso correcto.";
     await checkSession();
   });
+  const logoutBtn = document.querySelector("#logoutBtn");
 
+  logoutBtn.addEventListener("click", async () => {
+    logoutBtn.disabled = true;
+
+    const { error } = await supabaseClient.auth.signOut();
+
+    logoutBtn.disabled = false;
+
+    if (error) {
+      alert("No se pudo cerrar la sesión. Intenta nuevamente.");
+      return;
+    }
+
+    await checkSession();
+  });
   setToday();
   renderAll();
   checkSession();
