@@ -46,6 +46,44 @@
             <article class="stat-card"><div class="stat-icon purple">♡</div><div class="stat-label">Registros reproductivos</div><div class="stat-value" id="statRepro">0</div><div class="stat-foot">Servicios, partos y gestación</div></article>
             <article class="stat-card"><div class="stat-icon blue">⚖</div><div class="stat-label">Pesajes registrados</div><div class="stat-value" id="statWeights">0</div><div class="stat-foot">Control de peso</div></article>
           </div>
+          
+          <div class="panel" id="panel3D" style="margin-top:24px;">
+            <div class="panel-heading">
+              <div>
+                <h3>Visor 3D interactivo del ganado</h3>
+                <p>Explora una representación visual del hato de Los Hermanos Z.</p>
+              </div>
+            </div>
+            <div id="cattle3D" style="width:100%;min-height:380px;background:#0b211a;border-radius:14px;overflow:hidden;">
+              <div style="padding:40px 20px;text-align:center;color:#fff;">
+                <div style="font-size:76px;">🐄 🐂 🐄</div>
+                <h3>Visor 3D del ganado</h3>
+                <p>Espacio reservado para el modelo interactivo.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid" style="margin-top:24px;">
+            <article class="panel" style="min-width:0;">
+              <div class="panel-heading">
+                <div>
+                  <h3>Distribución del ganado en 3D</h3>
+                  <p>Composición por raza según los registros.</p>
+                </div>
+              </div>
+              <div id="breedChart3D" style="width:100%;height:360px;"></div>
+            </article>
+            <article class="panel" style="min-width:0;">
+              <div class="panel-heading">
+                <div>
+                  <h3>Estadísticas de la estancia</h3>
+                  <p>Resumen visual de los registros ganaderos.</p>
+                </div>
+              </div>
+              <div id="statsChart3D" style="width:100%;height:360px;"></div>
+            </article>
+          </div>
+
           <div class="two-col">
             <section class="panel"><div class="panel-heading"><div><h3>Accesos rápidos</h3><p>Registra una actividad de la estancia.</p></div></div><div class="quick-actions">
               <button class="quick-action" data-open="animals"><span>＋</span><b>Registrar bovino</b><small>Agregar un animal al hato</small></button>
