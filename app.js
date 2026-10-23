@@ -191,6 +191,7 @@ if(del){
    loginPanel.style.display = "flex";
   setToday();
   renderAll();
+  setTimeout(renderCharts3D, 1000);
 
   function renderCharts3D() {
     if (typeof Plotly === "undefined") return;
