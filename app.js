@@ -21,7 +21,9 @@
   function openDialog(id){if(id==="animalDialog"&&editingAnimalId===null)$("#animalForm").reset();if(["healthDialog","reproDialog","weightDialog"].includes(id)){const form=$("#"+id+" form");form.reset();const date=$('input[name="date"]',form);if(date)date.value=todayISO();fillAnimalOptions()}if(id==="animalDialog")$("#animalDialogTitle").textContent=editingAnimalId?"Editar bovino":"Nuevo bovino";$("#"+id).showModal()}
   function closeDialog(id){$("#"+id).close()}
   function fillAnimalOptions(){const opts=data.animals.filter(a=>a.status==="Activo").map(a=>`<option value="${escapeHTML(a.id)}">${escapeHTML(animalName(a.id))}</option>`).join("");$$(".animal-options").forEach(s=>{s.innerHTML='<option value="">Seleccionar animal</option>'+opts})}
-  function renderAnimals(){const q=$("#animalSearch").value.trim().toLowerCase();const breed=$("#animalFilter").value;const items=data.animals.filter(a=>(!q||[a.id,a.name,a.breed,a.sex].some(v=>String(v||"").toLowerCase().includes(q)))&&(!breed||a.breed===breed));$("#animalsTable").innerHTML=items.map(a=>`<tr><td>${escapeHTML(a.id)}</td><td>${escapeHTML(a.name||"—")}</td><td>${escapeHTML(a.breed)}</td><td>${escapeHTML(a.sex)}</td><td>${dateLabel(a.birth)}</td><td>${a.weight?escapeHTML(a.weight):"—"}</td><td><span class="tag ${a.status!=="Activo"?"warn":""}">${escapeHTML(a.status)}</span></td><td><button class="action-link" data-view-animal="${escapeHTML(a.id)}">Ver animal</button><button class="action-link" data-delete-animal="${escapeHTML(a.id)}">Eliminar</button></td></tr>`).join("");$("#animalsEmpty").classList.toggle("show",items.length===0);$("#animalsEmpty b").textContent=data.animals.length&&items.length===0?"No hay coincidencias":"No hay bovinos registrados";$("#animalsEmpty p").textContent=data.animals.length&&items.length===0?"Prueba con otro término o raza.":"Usa “Nuevo bovino” para agregar el primero."}
+  function renderAnimals(){const q=$("#animalSearch").value.trim().toLowerCase();const breed=$("#animalFilter").value;const items=data.animals.filter(a=>(!q||[a.id,a.name,a.breed,a.sex].some(v=>String(v||"").toLowerCase().includes(q)))&&(!breed||a.breed===breed));$("#animalsTable").innerHTML=items.map(a=>`<tr><td>${escapeHTML(a.id)}</td><td>${escapeHTML(a.name||"—")}</td><td>${escapeHTML(a.breed)}</td><td>${escapeHTML(a.sex)}</td><td>${dateLabel(a.birth)}</td><td>${a.weight?escapeHTML(a.weight):"—"}</td><td><span class="tag ${a.status!=="Activo"?"warn":""}">${escapeHTML(a.status)}</span></td><td><button class="action-link" data-view-animal="${escapeHTML(a.id)}">Ver animal</button>
+<button class="action-link" data-edit-animal="${escapeHTML(a.id)}">Editar</button>
+<button class="action-link" data-delete-animal="${escapeHTML(a.id)}">Eliminar</button></td></tr>`).join("");$("#animalsEmpty").classList.toggle("show",items.length===0);$("#animalsEmpty b").textContent=data.animals.length&&items.length===0?"No hay coincidencias":"No hay bovinos registrados";$("#animalsEmpty p").textContent=data.animals.length&&items.length===0?"Prueba con otro término o raza.":"Usa “Nuevo bovino” para agregar el primero."}
   function renderHealth(){$("#healthTable").innerHTML=[...data.health].sort((a,b)=>b.date.localeCompare(a.date)).map(h=>`<tr><td>${dateLabel(h.date)}</td><td>${escapeHTML(animalName(h.animalId))}</td><td>${escapeHTML(h.type)}</td><td>${escapeHTML(h.detail)}</td><td>${dateLabel(h.nextDate)}</td><td>${escapeHTML(h.notes||"—")}</td></tr>`).join("");$("#healthEmpty").classList.toggle("show",data.health.length===0)}
   function renderRepro(){$("#reproTable").innerHTML=[...data.reproduction].sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr><td>${dateLabel(r.date)}</td><td>${escapeHTML(animalName(r.animalId))}</td><td>${escapeHTML(r.type)}</td><td>${escapeHTML(r.sire||"—")}</td><td>${escapeHTML(r.result||"—")}</td></tr>`).join("");$("#reproEmpty").classList.toggle("show",data.reproduction.length===0)}
   function renderWeights(){$("#weightsTable").innerHTML=[...data.weights].sort((a,b)=>b.date.localeCompare(a.date)).map(w=>`<tr><td>${dateLabel(w.date)}</td><td>${escapeHTML(animalName(w.animalId))}</td><td>${escapeHTML(w.weight)}</td><td>${escapeHTML(w.notes||"—")}</td></tr>`).join("");$("#weightsEmpty").classList.toggle("show",data.weights.length===0)}
@@ -167,15 +169,28 @@ if(del){
   $("#weightForm").addEventListener("submit",e=>{e.preventDefault();const w=Object.fromEntries(new FormData(e.currentTarget).entries());if(!w.animalId){toast("Primero registra un bovino.");return}w.weight=Number(w.weight);data.weights.push({...w,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});const a=data.animals.find(x=>x.id===w.animalId);if(a)a.weight=w.weight;persist();closeDialog("weightDialog");renderAll();toast("Pesaje guardado.")});
   $("#savePaddockBtn").addEventListener("click",()=>{const name=$("#paddockName").value.trim(),area=Number($("#paddockArea").value);if(!name){toast("Escribe el nombre del potrero.");return}if($("#paddockArea").value!==""&&area<0){toast("La superficie no puede ser negativa.");return}data.paddocks.push({id:String(Date.now()),name,area:area||0});persist();$("#paddockName").value="";$("#paddockArea").value="";renderAll();toast("Potrero guardado.")});
   $("#paddockList").addEventListener("click",e=>{const b=e.target.closest("[data-delete-paddock]");if(b&&confirm("¿Eliminar este potrero?")){data.paddocks=data.paddocks.filter(p=>p.id!==b.dataset.deletePaddock);persist();renderAll();toast("Potrero eliminado.")}});
-    const loginPanel = $("#loginPanel");
+   
+  const loginPanel = $("#loginPanel");
   const loginForm = $("#loginForm");
   const loginMessage = $("#loginMessage");
+
+  async function checkSession() {
+    const { data: sessionData, error } =
+      await supabaseClient.auth.getSession();
+
+    if (error || !sessionData.session) {
+      loginPanel.style.display = "flex";
+      return;
+    }
+
+    loginPanel.style.display = "none";
+  }
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     loginMessage.textContent = "Verificando acceso...";
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
+    const { error } = await supabaseClient.auth.signInWithPassword({
       email: $("#loginEmail").value.trim(),
       password: $("#loginPassword").value
     });
@@ -184,14 +199,16 @@ if(del){
       loginMessage.textContent = "Correo o contraseña incorrectos.";
       return;
     }
+
     loginMessage.textContent = "Acceso correcto.";
-    loginPanel.style.display = "none";
+    await checkSession();
   });
 
-   loginPanel.style.display = "flex";
   setToday();
   renderAll();
+  checkSession();
   setTimeout(renderCharts3D, 1000);
+
 
   function renderCharts3D() {
     if (typeof Plotly === "undefined") return;
