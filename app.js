@@ -151,6 +151,33 @@ $("#animalForm").addEventListener("submit", async e => {
   $("#animalsTable").addEventListener("click", async e => {
     const edit = e.target.closest("[data-edit-animal]");
     const del = e.target.closest("[data-delete-animal]");
+    const view = e.target.closest("[data-view-animal]");
+
+if (view) {
+  const id = view.dataset.viewAnimal;
+  const animal = data.animals.find(
+    a => String(a.id) === String(id)
+  );
+
+  if (!animal) {
+    alert("No se encontró el bovino.");
+    return;
+  }
+
+  alert(
+    "FICHA DEL BOVINO\n\n" +
+    "Arete/ID: " + animal.id + "\n" +
+    "Nombre: " + (animal.name || "Sin nombre") + "\n" +
+    "Raza: " + (animal.breed || "No registrada") + "\n" +
+    "Sexo: " + (animal.sex || "No registrado") + "\n" +
+    "Nacimiento: " + (animal.birth || "No registrado") + "\n" +
+    "Peso: " + (animal.weight || "No registrado") + "\n" +
+    "Estado: " + (animal.status || "No registrado") + "\n" +
+    "Observaciones: " + (animal.notes || "Ninguna")
+  );
+
+  return;
+}
 
     if (edit) {
       editingAnimalId = edit.dataset.editAnimal;
