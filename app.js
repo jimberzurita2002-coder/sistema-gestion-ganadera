@@ -450,7 +450,27 @@ setTimeout(initCattle3D, 1200);
   let selectedCattle = null;
   let cattleRaycaster, cattleMouse;
   let cattleAnimationStarted = false;
+    const animatedCattle = [];
 
+  function animateCattleModels(time) {
+    animatedCattle.forEach((cow, index) => {
+      const t = time * 0.0018 + index * 1.7;
+
+      cow.position.y = Math.abs(Math.sin(t * 2)) * 0.035;
+      cow.rotation.y = Math.sin(t * 0.7) * 0.10;
+
+      cow.userData.legs?.forEach((leg, legIndex) => {
+        leg.rotation.x =
+          Math.sin(t * 3 + (legIndex % 2) * Math.PI) * 0.22;
+      });
+
+      if (cow.userData.tail) {
+        cow.userData.tail.rotation.x =
+          -0.55 + Math.sin(t * 4) * 0.25;
+        cow.userData.tail.rotation.z = Math.sin(t * 2) * 0.18;
+      }
+    });
+  }
   function initCattle3D() {
     const container = document.getElementById("cattle3D");
     if (!container || typeof THREE === "undefined") return;
@@ -573,9 +593,9 @@ setTimeout(initCattle3D, 1200);
       function animate() {
         requestAnimationFrame(animate);
         cattleControls.update();
+        animateCattleModels(performance.now());
         cattleRenderer.render(cattleScene, cattleCamera);
       }
-
       animate();
     }
 
@@ -649,18 +669,23 @@ setTimeout(initCattle3D, 1200);
       part(new THREE.SphereGeometry(0.10, 8, 8), dark, -0.25, 1.24, 0.55);
       part(new THREE.SphereGeometry(0.10, 8, 8), dark, 0.25, 1.24, 0.55);
 
-      // Cuatro patas
+           const legs = [];
+
       for (const lx of [-0.28, 0.28]) {
         for (const lz of [-0.28, 0.28]) {
-          part(
+          const leg = part(
             new THREE.CylinderGeometry(0.055, 0.07, 0.48, 8),
             dark,
             lx,
             0.28,
             lz
           );
+
+          legs.push(leg);
         }
       }
+
+      cow.userData.legs = legs;
 
       // Cola
       const tail = part(
@@ -671,6 +696,7 @@ setTimeout(initCattle3D, 1200);
         -0.52
       );
       tail.rotation.x = -0.55;
+      cow.userData.tail = tail;
 
       const marker = new THREE.Mesh(
         new THREE.SphereGeometry(0.08, 8, 8),
@@ -680,7 +706,7 @@ setTimeout(initCattle3D, 1200);
       marker.visible = false;
       cow.add(marker);
       cow.userData.marker = marker;
-
+      animatedCattle.push(cow);
       cattleGroup.add(cow);
     }
   }
