@@ -178,11 +178,18 @@ if(del){
     const { data: sessionData, error } =
       await supabaseClient.auth.getSession();
 
-    if (error || !sessionData.session) {
-      loginPanel.style.display = "flex";
-      return;
-    }
+      if (error || !sessionData.session) {
+  loginPanel.style.display = "flex";
 
+  loginForm.reset();
+
+  $("#loginEmail").value = "";
+  $("#loginPassword").value = "";
+  loginMessage.textContent = "";
+
+  return;
+}
+      
     loginPanel.style.display = "none";
 
     const user = sessionData.session.user;
