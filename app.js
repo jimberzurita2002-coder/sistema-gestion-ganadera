@@ -148,22 +148,87 @@ $("#animalForm").addEventListener("submit", async e => {
   }
 });
 
-  $("#animalsTable").addEventListener("click",e=>{const edit=e.target.closest("[data-edit-animal]");const del=e.target.closest("[data-delete-animal]");if(edit){editingAnimalId=edit.dataset.editAnimal;const a=data.animals.find(x=>x.id===editingAnimalId);if(!a)return;const form=$("#animalForm");Object.entries(a).forEach(([k,v])=>{if(form.elements[k])form.elements[k].value=v??""});openDialog("animalDialog")}
-if(del){
-  const id=del.dataset.deleteAnimal;
-  const password=prompt("Ingresa la contraseña para eliminar este bovino:");
-  if(password==="LHZ2026"){
-    if(confirm(`¿Eliminar el bovino ${id}? Los eventos anteriores se conservarán con su ID.`)){
-      data.animals=data.animals.filter(a=>a.id!==id);
+  $("#animalsTable").addEventListener("click", async e => {
+    const edit = e.target.closest("[data-edit-animal]");
+    const del = e.target.closest("[data-delete-animal]");
+
+    if (edit) {
+      editingAnimalId = edit.dataset.editAnimal;
+      const a = data.animals.find(x => x.id === editingAnimalId);
+      if (!a) return;
+
+      const form = $("#animalForm");
+      Object.entries(a).forEach(([k, v]) => {
+        if (form.elements[k]) form.elements[k].value = v ?? "";
+      });
+
+      openDialog("animalDialog");
+      return;
+    }
+
+    if (!del) return;
+
+    const id = del.dataset.deleteAnimal;
+    const password = prompt(
+      "Ingresa la contraseña para eliminar este bovino:"
+    );
+
+    if (password === null) return;
+
+    if (password !== "LHZ2026") {
+      toast("Contraseña incorrecta. No se eliminó el bovino.");
+      return;
+    }
+
+    if (!confirm(`¿Eliminar el bovino ${id}?`)) return;
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+
+      const user = sessionData?.session?.user;
+
+      if (sessionError || !user) {
+        toast("Inicia sesión nuevamente.");
+        return;
+      }
+
+      const { data: deleted, error } = await supabaseClient
+        .from("animals")
+        .delete()
+        .eq("animal_code", String(id))
+        .eq("user_id", user.id)
+        .select();
+
+      if (error) throw error;
+
+      if (!deleted || deleted.length === 0) {
+        toast("No se eliminó. Revisa los permisos de Supabase.");
+        return;
+      }
+
+      data.animals = data.animals.filter(
+        a => String(a.id) !== String(id)
+      );
+
       persist();
       renderAll();
-      toast("Bovino eliminado.");
+
+      if (typeof renderCattle3D === "function") {
+        renderCattle3D();
+      }
+
+      if (typeof renderCharts3D === "function") {
+        renderCharts3D();
+      }
+
+      toast("Bovino eliminado de Supabase.");
+    } catch (error) {
+      console.error("Error eliminando bovino:", error);
+      toast("Error al eliminar: " + (error.message || "Revisa Supabase."));
     }
-  }else if(password!==null){
-    toast("Contraseña incorrecta. No se eliminó el bovino.");
-  }
-}
-});
+  });
+
   $("#healthForm").addEventListener("submit",e=>{e.preventDefault();const h=Object.fromEntries(new FormData(e.currentTarget).entries());if(!h.animalId){toast("Primero registra un bovino.");return}data.health.push({...h,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});persist();closeDialog("healthDialog");renderAll();toast("Evento sanitario guardado.")});
   $("#reproForm").addEventListener("submit",e=>{e.preventDefault();const r=Object.fromEntries(new FormData(e.currentTarget).entries());if(!r.animalId){toast("Primero registra un bovino.");return}data.reproduction.push({...r,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});persist();closeDialog("reproDialog");renderAll();toast("Registro reproductivo guardado.")});
   $("#weightForm").addEventListener("submit",e=>{e.preventDefault();const w=Object.fromEntries(new FormData(e.currentTarget).entries());if(!w.animalId){toast("Primero registra un bovino.");return}w.weight=Number(w.weight);data.weights.push({...w,id:crypto.randomUUID?crypto.randomUUID():String(Date.now())});const a=data.animals.find(x=>x.id===w.animalId);if(a)a.weight=w.weight;persist();closeDialog("weightDialog");renderAll();toast("Pesaje guardado.")});
@@ -219,6 +284,13 @@ if(del){
     }));
 
     renderAll();
+    if (typeof renderCattle3D === "function") {
+      renderCattle3D();
+    }
+
+    if (typeof renderCharts3D === "function") {
+      renderCharts3D();
+    }
   }
 
   loginForm.addEventListener("submit", async (e) => {
@@ -255,11 +327,298 @@ if(del){
     await checkSession();
   });
   setToday();
-  renderAll();
-  checkSession();
-  setTimeout(renderCharts3D, 1000);
+renderAll();
+checkSession();
+setTimeout(renderCharts3D, 1000);
+setTimeout(initCattle3D, 1200);
+  
+  let cattleScene, cattleCamera, cattleRenderer, cattleControls;
+  let cattleGroup;
+  let selectedCattle = null;
+  let cattleRaycaster, cattleMouse;
+  let cattleAnimationStarted = false;
 
+  function initCattle3D() {
+    const container = document.getElementById("cattle3D");
+    if (!container || typeof THREE === "undefined") return;
 
+    if (cattleRenderer) {
+      renderCattle3D();
+      return;
+    }
+
+    container.innerHTML = "";
+
+    cattleScene = new THREE.Scene();
+    cattleScene.background = new THREE.Color(0xc9dfcf);
+
+    cattleCamera = new THREE.PerspectiveCamera(
+      45,
+      container.clientWidth / 380,
+      0.1,
+      1000
+    );
+    cattleCamera.position.set(10, 9, 13);
+
+    cattleRenderer = new THREE.WebGLRenderer({ antialias: true });
+    cattleRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    cattleRenderer.setSize(container.clientWidth, 380);
+    cattleRenderer.shadowMap.enabled = true;
+    container.appendChild(cattleRenderer.domElement);
+
+    cattleControls = new THREE.OrbitControls(
+      cattleCamera,
+      cattleRenderer.domElement
+    );
+    cattleControls.enableDamping = true;
+    cattleControls.target.set(0, 0, 0);
+    cattleControls.maxPolarAngle = Math.PI / 2.05;
+
+    cattleScene.add(new THREE.HemisphereLight(0xffffff, 0x59734b, 2));
+
+    const sun = new THREE.DirectionalLight(0xffffff, 2);
+    sun.position.set(8, 14, 6);
+    sun.castShadow = true;
+    cattleScene.add(sun);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(22, 18),
+      new THREE.MeshStandardMaterial({ color: 0x72a85a })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.05;
+    ground.receiveShadow = true;
+    cattleScene.add(ground);
+
+    const grid = new THREE.GridHelper(22, 22, 0x567b48, 0x85b56f);
+    grid.position.y = 0;
+    cattleScene.add(grid);
+
+    // Cerca del potrero
+    const fenceMaterial = new THREE.MeshStandardMaterial({
+      color: 0x79512f
+    });
+
+    function fencePost(x, z) {
+      const post = new THREE.Mesh(
+        new THREE.BoxGeometry(0.16, 1.15, 0.16),
+        fenceMaterial
+      );
+      post.position.set(x, 0.52, z);
+      post.castShadow = true;
+      cattleScene.add(post);
+    }
+
+    for (let x = -10; x <= 10; x += 2) {
+      fencePost(x, -8);
+      fencePost(x, 8);
+    }
+
+    for (let z = -6; z <= 6; z += 2) {
+      fencePost(-10, z);
+      fencePost(10, z);
+    }
+
+    function rail(x1, z1, x2, z2, y) {
+      const length = Math.hypot(x2 - x1, z2 - z1);
+      const bar = new THREE.Mesh(
+        new THREE.BoxGeometry(length, 0.09, 0.09),
+        fenceMaterial
+      );
+      bar.position.set((x1 + x2) / 2, y, (z1 + z2) / 2);
+      bar.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
+      cattleScene.add(bar);
+    }
+
+    [[-10, -8, 10, -8], [-10, 8, 10, 8],
+      [-10, -8, -10, 8], [10, -8, 10, 8]].forEach(edge => {
+      rail(edge[0], edge[1], edge[2], edge[3], 0.35);
+      rail(edge[0], edge[1], edge[2], edge[3], 0.75);
+    });
+
+    cattleGroup = new THREE.Group();
+    cattleScene.add(cattleGroup);
+
+    cattleRaycaster = new THREE.Raycaster();
+    cattleMouse = new THREE.Vector2();
+
+    cattleRenderer.domElement.addEventListener("click", selectCattle3D);
+
+    if (!document.getElementById("cattleSelectedInfo")) {
+      const info = document.createElement("div");
+      info.id = "cattleSelectedInfo";
+      info.style.cssText =
+        "padding:12px;color:#244832;background:#edf5ed;font-size:14px;";
+      info.textContent =
+        "Selecciona un bovino haciendo clic sobre él.";
+      container.appendChild(info);
+    }
+
+    if (!cattleAnimationStarted) {
+      cattleAnimationStarted = true;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        cattleControls.update();
+        cattleRenderer.render(cattleScene, cattleCamera);
+      }
+
+      animate();
+    }
+
+    renderCattle3D();
+  }
+
+  function renderCattle3D() {
+    if (!cattleGroup) return;
+
+    while (cattleGroup.children.length) {
+      const obj = cattleGroup.children[0];
+      cattleGroup.remove(obj);
+      obj.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      });
+    }
+
+    const animals = data.animals.filter(a => a.status === "Activo");
+    const count = animals.length;
+
+    const limit = Math.min(count, 80);
+    const columns = Math.max(1, Math.ceil(Math.sqrt(limit * 1.3)));
+    const rows = Math.ceil(limit / columns);
+
+    const info = document.getElementById("cattleSelectedInfo");
+    if (info) {
+      info.textContent = count
+        ? `Bovinos activos: ${count}. Se muestran hasta ${limit} figuras.`
+        : "Aún no hay bovinos activos. Registra un bovino para visualizarlo.";
+    }
+
+    for (let i = 0; i < limit; i++) {
+      const animal = animals[i];
+      const cow = new THREE.Group();
+      cow.userData.animal = animal;
+
+      const x = (i % columns) * 2.0 - ((columns - 1) * 2.0) / 2;
+      const z = Math.floor(i / columns) * 2.0 - ((rows - 1) * 2.0) / 2;
+
+      cow.position.set(x, 0, z);
+
+      const brown = new THREE.MeshStandardMaterial({ color: 0x80502f });
+      const dark = new THREE.MeshStandardMaterial({ color: 0x35251c });
+      const white = new THREE.MeshStandardMaterial({ color: 0xe7dfce });
+
+      function part(geometry, material, px, py, pz) {
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(px, py, pz);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        cow.add(mesh);
+        return mesh;
+      }
+
+      // Cuerpo y cuello
+      part(new THREE.SphereGeometry(0.48, 16, 12), brown, 0, 0.85, 0);
+      part(new THREE.SphereGeometry(0.25, 12, 10), brown, 0, 1.05, 0.38);
+
+      // Cabeza y hocico
+      part(new THREE.SphereGeometry(0.23, 12, 10), brown, 0, 1.12, 0.65);
+      part(new THREE.SphereGeometry(0.15, 12, 10), white, 0, 1.04, 0.82);
+
+      // Orejas
+      part(new THREE.SphereGeometry(0.10, 8, 8), dark, -0.25, 1.24, 0.55);
+      part(new THREE.SphereGeometry(0.10, 8, 8), dark, 0.25, 1.24, 0.55);
+
+      // Cuatro patas
+      for (const lx of [-0.28, 0.28]) {
+        for (const lz of [-0.28, 0.28]) {
+          part(
+            new THREE.CylinderGeometry(0.055, 0.07, 0.48, 8),
+            dark,
+            lx,
+            0.28,
+            lz
+          );
+        }
+      }
+
+      // Cola
+      const tail = part(
+        new THREE.CylinderGeometry(0.025, 0.035, 0.45, 6),
+        dark,
+        0,
+        0.75,
+        -0.52
+      );
+      tail.rotation.x = -0.55;
+
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffd54f })
+      );
+      marker.position.set(0, 1.65, 0);
+      marker.visible = false;
+      cow.add(marker);
+      cow.userData.marker = marker;
+
+      cattleGroup.add(cow);
+    }
+  }
+
+  function selectCattle3D(event) {
+    if (!cattleRenderer || !cattleCamera) return;
+
+    const rect = cattleRenderer.domElement.getBoundingClientRect();
+    cattleMouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    cattleMouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    cattleRaycaster.setFromCamera(cattleMouse, cattleCamera);
+    const hits = cattleRaycaster.intersectObjects(cattleGroup.children, true);
+
+    if (!hits.length) return;
+
+    let cow = hits[0].object;
+    while (cow.parent && cow.parent !== cattleGroup) {
+      cow = cow.parent;
+    }
+
+    if (!cow.userData.animal) return;
+
+    if (selectedCattle && selectedCattle.userData.marker) {
+      selectedCattle.userData.marker.visible = false;
+    }
+
+    selectedCattle = cow;
+    if (cow.userData.marker) cow.userData.marker.visible = true;
+
+    const a = cow.userData.animal;
+    const info = document.getElementById("cattleSelectedInfo");
+
+    if (info) {
+      info.textContent =
+        `Bovino: ${a.id} | Nombre: ${a.name || "Sin nombre"} | ` +
+        `Raza: ${a.breed || "No indicada"} | Sexo: ${a.sex || "No indicado"}`;
+    }
+  }
+
+  window.addEventListener("resize", () => {
+    const container = document.getElementById("cattle3D");
+    if (!container || !cattleRenderer || !cattleCamera) return;
+
+    const width = container.clientWidth;
+    if (!width) return;
+
+    cattleCamera.aspect = width / 380;
+    cattleCamera.updateProjectionMatrix();
+    cattleRenderer.setSize(width, 380);
+  });
   function renderCharts3D() {
     if (typeof Plotly === "undefined") return;
 
