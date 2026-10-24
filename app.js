@@ -657,17 +657,69 @@ setTimeout(initCattle3D, 1200);
         return mesh;
       }
 
-      // Cuerpo y cuello
-      part(new THREE.SphereGeometry(0.48, 16, 12), brown, 0, 0.85, 0);
-      part(new THREE.SphereGeometry(0.25, 12, 10), brown, 0, 1.05, 0.38);
+      
+      // Cuerpo más ancho y natural
+      const body = part(
+        new THREE.SphereGeometry(0.5, 24, 18),
+        brown, 0, 0.85, 0
+      );
+      body.scale.set(1.35, 0.85, 1.0);
 
-      // Cabeza y hocico
-      part(new THREE.SphereGeometry(0.23, 12, 10), brown, 0, 1.12, 0.65);
-      part(new THREE.SphereGeometry(0.15, 12, 10), white, 0, 1.04, 0.82);
+      // Cuello
+      const neck = part(
+        new THREE.SphereGeometry(0.28, 20, 16),
+        brown, 0, 1.02, 0.36
+      );
+      neck.scale.set(0.9, 1.15, 1.2);
+
+      // Cabeza
+      const head = part(
+        new THREE.SphereGeometry(0.23, 20, 16),
+        brown, 0, 1.18, 0.63
+      );
+      head.scale.set(0.9, 1.05, 1.15);
+
+      // Hocico
+      const muzzle = part(
+        new THREE.SphereGeometry(0.15, 20, 14),
+        white, 0, 1.08, 0.84
+      );
+      muzzle.scale.set(1.15, 0.8, 0.9);
 
       // Orejas
-      part(new THREE.SphereGeometry(0.10, 8, 8), dark, -0.25, 1.24, 0.55);
-      part(new THREE.SphereGeometry(0.10, 8, 8), dark, 0.25, 1.24, 0.55);
+      const earLeft = part(
+        new THREE.SphereGeometry(0.12, 16, 12),
+        brown, -0.28, 1.28, 0.55
+      );
+      earLeft.scale.set(1.6, 0.55, 0.8);
+
+      const earRight = part(
+        new THREE.SphereGeometry(0.12, 16, 12),
+        brown, 0.28, 1.28, 0.55
+      );
+      earRight.scale.set(1.6, 0.55, 0.8);
+
+      // Ojos
+      const eyeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x17120e,
+        roughness: 0.4
+      });
+
+      part(new THREE.SphereGeometry(0.035, 12, 10),
+        eyeMaterial, -0.19, 1.22, 0.78);
+
+      part(new THREE.SphereGeometry(0.035, 12, 10),
+        eyeMaterial, 0.19, 1.22, 0.78);
+
+      // Joroba para razas cebuinas
+      if (["Brahman", "Nelore", "Gyr"].includes(animal.breed)) {
+        const hump = part(
+          new THREE.SphereGeometry(0.28, 20, 16),
+          brown, 0, 1.35, 0.12
+        );
+        hump.scale.set(0.95, 1.15, 0.8);
+      }
+
 
            const legs = [];
 
