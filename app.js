@@ -175,7 +175,7 @@ $("#animalForm").addEventListener("submit", async e => {
 
     if (password === null) return;
 
-    if (password !== "LHZ2026") {
+    if (password !== "13126172Z") {
       toast("Contraseña incorrecta. No se eliminó el bovino.");
       return;
     }
