@@ -38,9 +38,11 @@
 $("#animalForm").addEventListener("submit", async e => {
   e.preventDefault();
 
-  const f = new FormData(e.currentTarget);
-  const a = Object.fromEntries(f.entries());
-  a.id = String(a.id || "").trim();
+ const f = new FormData(e.currentTarget);
+const a = Object.fromEntries(f.entries());
+const photoFile = f.get("animalPhoto");
+delete a.animalPhoto;
+a.id = String(a.id || "").trim();
 
   if (!a.id) {
     toast("El arete o ID es obligatorio.");
@@ -66,7 +68,45 @@ $("#animalForm").addEventListener("submit", async e => {
     toast("Sesión no activa. Vuelve a iniciar sesión.");
     return;
   }
+  let photoPath = null;
 
+  if (photoFile && photoFile.size > 0) {
+    if (!photoFile.type.startsWith("image/")) {
+      toast("Selecciona un archivo de imagen.");
+      return;
+    }
+
+    if (photoFile.size > 5 * 1024 * 1024) {
+      toast("La foto no puede superar los 5 MB.");
+      return;
+    }
+
+    const extension = photoFile.name.split(".").pop().toLowerCase();
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+
+    if (!allowedExtensions.includes(extension)) {
+      toast("Usa una foto JPG, PNG o WEBP.");
+      return;
+    }
+
+    const fileName = `${user.id}/${Date.now()}-${a.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.${extension}`;
+
+    const { data: uploadedFile, error: uploadError } =
+      await supabaseClient.storage
+        .from("fotos-bovinos")
+        .upload(fileName, photoFile, {
+          upsert: true,
+          contentType: photoFile.type
+        });
+
+    if (uploadError) {
+      console.error("Error subiendo foto:", uploadError);
+      toast("No se pudo subir la foto: " + uploadError.message);
+      return;
+    }
+
+    photoPath = uploadedFile.path;
+  }
   const record = {
     animal_code: a.id,
     name: a.name || null,
@@ -75,6 +115,7 @@ $("#animalForm").addEventListener("submit", async e => {
     birth_date: a.birth || null,
     category: a.category || null,
     notes: a.notes || null,
+    photo_path: photoPath,
     user_id: user.id
   };
 
@@ -152,7 +193,6 @@ $("#animalForm").addEventListener("submit", async e => {
     const edit = e.target.closest("[data-edit-animal]");
     const del = e.target.closest("[data-delete-animal]");
     const view = e.target.closest("[data-view-animal]");
-
 if (view) {
   const id = view.dataset.viewAnimal;
   const animal = data.animals.find(
@@ -164,21 +204,66 @@ if (view) {
     return;
   }
 
-  alert(
-    "FICHA DEL BOVINO\n\n" +
-    "Arete/ID: " + animal.id + "\n" +
-    "Nombre: " + (animal.name || "Sin nombre") + "\n" +
-    "Raza: " + (animal.breed || "No registrada") + "\n" +
-    "Sexo: " + (animal.sex || "No registrado") + "\n" +
-    "Nacimiento: " + (animal.birth || "No registrado") + "\n" +
-    "Peso: " + (animal.weight || "No registrado") + "\n" +
-    "Estado: " + (animal.status || "No registrado") + "\n" +
-    "Observaciones: " + (animal.notes || "Ninguna")
-  );
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
 
+  const user = sessionData?.session?.user;
+
+  if (sessionError || !user) {
+    toast("Inicia sesión nuevamente.");
+    return;
+  }
+
+  let photoUrl = "";
+
+  if (animal.photoPath) {
+    const { data: signedPhoto, error: photoError } =
+      await supabaseClient.storage
+        .from("fotos-bovinos")
+        .createSignedUrl(animal.photoPath, 300);
+
+    if (!photoError && signedPhoto) {
+      photoUrl = signedPhoto.signedUrl;
+    }
+  }
+
+  const photoHtml = photoUrl
+    ? `<img src="${photoUrl}" alt="Foto del bovino" style="width:100%;max-height:280px;object-fit:contain;border-radius:12px;margin-bottom:12px;">`
+    : `<p>Este bovino todavía no tiene una foto guardada.</p>`;
+
+  const profileWindow = window.open("", "_blank");
+
+  if (!profileWindow) {
+    toast("Permite las ventanas emergentes para ver la ficha.");
+    return;
+  }
+
+  profileWindow.document.write(`
+    <!doctype html>
+    <html lang="es">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Ficha del bovino ${animal.id}</title>
+    </head>
+    <body style="font-family:Arial,sans-serif;max-width:650px;margin:24px auto;padding:16px;color:#24352b;">
+      <h2>Ficha del bovino</h2>
+      ${photoHtml}
+      <p><b>Arete/ID:</b> ${animal.id}</p>
+      <p><b>Nombre:</b> ${animal.name || "Sin nombre"}</p>
+      <p><b>Raza:</b> ${animal.breed || "No registrada"}</p>
+      <p><b>Sexo:</b> ${animal.sex || "No registrado"}</p>
+      <p><b>Nacimiento:</b> ${animal.birth || "No registrado"}</p>
+      <p><b>Peso:</b> ${animal.weight || "No registrado"}</p>
+      <p><b>Estado:</b> ${animal.status || "No registrado"}</p>
+      <p><b>Observaciones:</b> ${animal.notes || "Ninguna"}</p>
+    </body>
+    </html>
+  `);
+
+  profileWindow.document.close();
   return;
 }
-
     if (edit) {
       editingAnimalId = edit.dataset.editAnimal;
       const a = data.animals.find(x => x.id === editingAnimalId);
@@ -307,7 +392,8 @@ if (view) {
       weight: "",
       origin: "",
       status: a.category || "Activo",
-      notes: a.notes || ""
+      notes: a.notes || "",
+      photoPath: a.photo_path || ""
     }));
 
     renderAll();
