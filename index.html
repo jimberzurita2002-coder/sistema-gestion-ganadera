@@ -144,6 +144,15 @@
     <label>Fecha de nacimiento<input name="birth" type="date"></label><label>Peso actual (kg)<input name="weight" type="number" min="0" step="0.1" placeholder="Ej. 180"></label>
     <label>Procedencia<input name="origin" maxlength="100" placeholder="Ej. Nacido en la estancia"></label><label>Estado<select name="status"><option>Activo</option><option>Vendido</option><option>Fallecido</option><option>Trasladado</option></select></label>
     <label class="full">Observaciones<textarea name="notes" rows="3" placeholder="Señas, color, detalles…"></textarea></label>
+    <label class="full">
+  Foto del bovino
+  <input
+    type="file"
+    name="animalPhoto"
+    accept="image/jpeg,image/png,image/webp"
+  >
+  <small>Formatos permitidos: JPG, PNG o WEBP.</small>
+</label>
   </div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="animalDialog">Cancelar</button><button type="submit" class="primary-btn">Guardar bovino</button></div></form></dialog>
 
   <dialog id="healthDialog" class="modal"><form id="healthForm" method="dialog"><div class="modal-head"><div><div class="eyebrow">SANIDAD ANIMAL</div><h2>Nuevo evento sanitario</h2></div><button type="button" class="close-btn" data-close="healthDialog">×</button></div><div class="form-grid">
