@@ -68,7 +68,11 @@ a.id = String(a.id || "").trim();
     toast("Sesión no activa. Vuelve a iniciar sesión.");
     return;
   }
-  let photoPath = null;
+  const existingAnimal = editingAnimalId !== null
+  ? data.animals.find(x => String(x.id) === String(editingAnimalId))
+  : null;
+
+let photoPath = existingAnimal?.photoPath || null;
 
   if (photoFile && photoFile.size > 0) {
     if (!photoFile.type.startsWith("image/")) {
@@ -145,7 +149,7 @@ a.id = String(a.id || "").trim();
     }
 
     if (result.error) throw result.error;
-
+    a.photoPath = photoPath || "";
     a.weight = a.weight ? Number(a.weight) : "";
     a.createdAt = editingAnimalId !== null
       ? (data.animals.find(x => String(x.id) === String(editingAnimalId))?.createdAt || todayISO())
