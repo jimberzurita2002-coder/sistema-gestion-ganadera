@@ -68,11 +68,29 @@ a.id = String(a.id || "").trim();
     toast("Sesión no activa. Vuelve a iniciar sesión.");
     return;
   }
-  const existingAnimal = editingAnimalId !== null
+ const existingAnimal = editingAnimalId !== null
   ? data.animals.find(x => String(x.id) === String(editingAnimalId))
   : null;
 
 let photoPath = existingAnimal?.photoPath || null;
+
+if (editingAnimalId !== null && (!photoFile || photoFile.size === 0)) {
+  const { data: savedAnimal, error: photoPathError } =
+    await supabaseClient
+      .from("animals")
+      .select("photo_path")
+      .eq("animal_code", String(editingAnimalId))
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+  if (photoPathError || !savedAnimal) {
+    console.error("No se pudo recuperar la ruta de la foto:", photoPathError);
+    toast("No se pudo verificar la foto anterior. No se guardaron los cambios.");
+    return;
+  }
+
+  photoPath = savedAnimal.photo_path || existingAnimal?.photoPath || null;
+}
 
   if (photoFile && photoFile.size > 0) {
     if (!photoFile.type.startsWith("image/")) {
